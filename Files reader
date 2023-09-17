@@ -1,0 +1,42 @@
+import os
+from docx2txt import process
+from pptx import Presentation
+from pptx.util import Inches
+
+# Function to extract text from supported document formats
+def extract_text(file_path):
+    text = ""
+    try:
+        text = process(file_path)
+    except Exception as e:
+        print(f"Error extracting text from {file_path}: {str(e)}")
+    return text
+
+# Function to create a PowerPoint presentation slide
+def add_slide(presentation, title, content):
+    slide_layout = presentation.slide_layouts[5]  # Use a blank slide layout
+    slide = presentation.slides.add_slide(slide_layout)
+    title_shape = slide.shapes.title
+    content_shape = slide.shapes.add_textbox(Inches(1), Inches(1.5), Inches(8), Inches(3))
+    title_shape.text = title
+    tf = content_shape.text_frame
+    tf.text = content
+
+# Define the folder containing the files to be summarized
+folder_path = "folder_path_here"
+
+# Create a new PowerPoint presentation
+presentation = Presentation()
+
+# Iterate through files in the folder
+for filename in os.listdir(folder_path):
+    if filename.endswith(".docx") or filename.endswith(".txt"):
+        file_path = os.path.join(folder_path, filename)
+        file_content = extract_text(file_path)
+        if file_content:
+            # Create a slide with the filename as the title and the file content as content
+            add_slide(presentation, filename, file_content)
+
+# Save the PowerPoint presentation
+presentation.save("summary.pptx")
+print("PowerPoint presentation created successfully.")
